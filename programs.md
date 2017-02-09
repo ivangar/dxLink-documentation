@@ -1,0 +1,333 @@
+# dxLink - Accredited Programs
+
+## Database ER-diagram structure
+
+The first stage of creating a new accredited program and its sections is to generate new records in the database. For best practices, I ususally insert the data in the local database first using Sequel Pro, and then do the same thing in the remote database through phpMyAdmin. The ID's for unique key fields of each table below are chosen to match the program ID of the program itself. So for example if the `program_id` is 'SUN_01', then the `program_section_id` key value for pretest should be 'SUN_01_Pre_01', the `topic_id` key value should be 'SUN_01_topic_01', and so on. I add the _01 at the end of each of ther sections ID because we might have a second version of the same program like we did for Zoster programs for instance, or we may have a similar version of the same program. So numbering them makes it a more efficient way to create IDs.
+
+For the purpose of this guide the Vaccination Communication (/programs/vaccine) program will be used as an example, since this program has all the regular sections (Pre-test, Post-test, Discussion Forum and Program Evaluation). As we will see further down in this document, these sections are not always required for some programs. The program code is usually established by STA. For this program the code established was MRK_125, thus this is the one that was selected to generate all the records in the database for dxLink. Below are the tables that are used to develop the code for accredited programs, with the MRK_125 program populated as an example for each table :
+
+**Note - Create the ID's in the tables following the order they appear below, because you must create the primary key first in order to use it as a foreign key in another table.*
+
+#### programs ####
+
+~~~~
+  `program_id` varchar(20) NOT NULL DEFAULT '',
+  `area_id` varchar(20) DEFAULT NULL,
+  `sponsor` varchar(200) DEFAULT NULL,
+  `program_type` varchar(200) DEFAULT NULL,
+  `program_title` varchar(200) DEFAULT NULL,
+  `program_subtitle` varchar(200) DEFAULT NULL,
+  `program_description` varchar(1000) DEFAULT NULL,
+  `image` longblob,
+  `language` varchar(15) DEFAULT NULL,
+  `authors` varchar(400) DEFAULT NULL,
+  `url` varchar(200) DEFAULT NULL,
+  `launch_date` date DEFAULT NULL,
+  `expiration_date` date DEFAULT NULL
+~~~~
+
+~~~~
+  'MRK_125',
+  'AP_01',
+  'Merck',
+  'accredited',
+  'Words Matter! Optimizing Vaccine Uptake by Connecting with your Patients:',
+  'Workshop on Adult Immunization Communication (ID 185454)',
+  '“Words Matter!” is an interactive educational program aimed at optimizing the communication skills of 
+  primary healthcare providers when discussing vaccination with their adult patients. Topics covered 
+  include: Principles of effective communication; The motivational interview approach; and Personalizing
+  discussions on vaccination based on patient predisposition/attitude.',
+  NULL,
+  'english',
+  'Dr. Marc Steben, Marie-Thérèse Lussier, Dr. Walter Chow and Dr. Jay Keystone',
+  'https://dxlink.ca/programs/vaccination/#tab1',
+   NULL,
+   NULL
+~~~~
+
+#### program_sections ####
+
+~~~~
+  `program_section_id` varchar(20) NOT NULL DEFAULT '',
+  `program_id` varchar(20) NOT NULL DEFAULT '',
+  `program_section_name` varchar(150) DEFAULT NULL,
+  `program_section_type` varchar(25) DEFAULT NULL
+~~~~
+
+~~~~
+  'MRK_125_Pre_01',
+  'MRK_125',
+  'MRK 125 Pre-test',
+  'Test form'
+~~~~
+
+#### forum_topics ####
+
+~~~~
+  `topic_id` varchar(20) NOT NULL DEFAULT '',
+  `topic_content` varchar(512) DEFAULT NULL,
+  `program_section_id` varchar(20) NOT NULL
+~~~~
+
+~~~~
+  'MRK_125_topic_01',
+  'What are some of the most common/frequent misconceptions about vaccines which you hear from your patients? What are the main sources of these misconceptions (i.e., how/where are your patients getting wrong information or ideas)?',
+  'MRK_125_Forum_01'
+~~~~
+
+#### questions ####
+
+~~~~
+  `question_id` varchar(20) NOT NULL DEFAULT '',
+  `question` varchar(255) DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL
+~~~~
+
+~~~~
+  'MRK_125_Q_1',
+  'The concept of “herd immunity” refers to:',
+  'mc'
+~~~~
+
+#### valid_answers ####
+
+~~~~
+  `valid_answer_id` varchar(20) NOT NULL DEFAULT '',
+  `question_id` varchar(20) DEFAULT NULL,
+  `answer` varchar(255) DEFAULT NULL
+~~~~
+
+~~~~
+  'MRK_125_A_1',
+  'MRK_125_Q_1',
+  'High immunization rates in a population providing protection to non-immune members.'
+~~~~
+
+#### certificate ####
+
+~~~~
+  `certificate_id` varchar(20) NOT NULL DEFAULT '',
+  `accreditation_code` varchar(20) DEFAULT NULL,
+  `no_credits` varchar(8) DEFAULT NULL,
+  `type_of_credit` varchar(64) DEFAULT NULL
+~~~~
+
+~~~~
+  'M_Pro_03',
+  'cfpc_01',
+  '3',
+  'Mainpro+'
+~~~~
+
+## Database tables overview
+
+#### programs columns ####
+
+* `program_id` - primary key
+* `area_id` - this column is a foreign key that references the table therapeutic_areas. It is an optional field, but it helps to categorize the programs in the main dxlink sections (Accredited Programs, Clinical Update and Congress Reports). The value 'AP_01' should be used for all accredited programs.
+* `sponsor` - optional value that helps to categorize the sponsor of each program
+* `program_type` - optional field that helps to categorize the programs in accredited and non-accredited
+* `program_title` - this field is the program title that is inserted in the dynamic generated PDF certificate
+* `program_subtitle` - this field is the program subtitle that is inserted in the dynamic generated PDF certificate
+* `program_description` - this is the program blurb text or descriptive text that is used in the dxLink home page
+* `image` - binary large object data type field that stores the image slider of the program. This field was added for a project but eventually the project was discontinued. Inserting the image is no longer needed, and the NULL value should be used for this field or leave it as default.
+* `language` - optional field to categorize the programs by language English or French.
+* `authors` - optional field that contains the authors of the program. It is not necessary to add information here, but can be helpful for future reference.
+* `url` - optional field that contains the url of the program. This url is sent internally to STA members that need to review the program and test it when the program stage is still in development.
+* `launch_date` - optional field of the launch date of the program.
+* `expiration_date` - optional field of the end date of the program.
+
+#### program_sections columns ####
+
+* `program_section_id` - primary key
+* `program_id` - foreign key from programs table
+* `program_section_name` - optional name of the program section (Post-test, Pre-test, Discussion Forum or Evaluation). In this column you can add helpful comments about the section, for instance 'Sunovion Pre-test version #2'
+* `program_section_type` - type of section
+
+#### forum_topics columns ####
+
+* `topic_id` - primary key of each of the topics of the Discussion Forum section
+* `topic_content` - the topic text
+* `program_section_id` - foreign key that links the Discussion Forum section from the program_sections table
+
+#### questions columns ####
+
+* `question_id` - primary key for each question of the Pre-test and Evaluation Form. (Post-test is the same as the Pre-test, thus we only need to insert questions for Pre-test)
+* `question` - question text
+* `type` - question type : **mc** for multiple choice and **open** for open questions
+
+#### valid_answers columns ####
+
+* `valid_answer_id` - primary key of the valid answer for each question
+* `question_id` - foreign key from questions table. Each question has only one valid answer
+* `answer` - answer text. Needs to be copied here exactly as it is in the word document, these will be used by a script to match the answers and give a grade
+
+#### certificate columns ####
+
+* `certificate_id` - primary key certificate
+* `accreditation_code` - foreign key that links to the accreditation_criteria table
+* `no_credits` - number of credits earned for the accredited program
+* `type_of_credit` - the type of credit that is granted for this accredited program
+
+
+## Program file structure
+
+Once the database has been populated with the program content, the second stage is to begin developing the source code. Since the programs are similar, the best way to get ahead faster is to duplicate an existing program folder with all its contents and start to modify it from there. However, before doing this you must be aware of the sections that are required for the new program; as stated before some programs vary in requisites to obtain the certificate. Some programs don't have Pre-test and Post-test, other programs have an extra section. Based on this analysis, duplicate the program that best corresponds to the criteria of the new program.
+
+Any Accredited program has specific php files that are the backbone of the whole program. These files can be found in (/programs/lib/php).
+These main files are:
+
+* [program.php](#program)
+* [process_test.php](#process_test)
+* [process_evaluation.php](#process_evaluation)
+* forum_topics.php
+* program_results.php
+
+Following is a brief description of each of these core-program files. They are the basis of all the accredited programs that are on dxlink so special care needs to be applied if there is a need to modify any of these files. But in general, they shouldn't be modified.
+
+### <a name="program"></a> program.php
+
+At the top of the file there are some __require_once()__ functions, which are the PHP functions to import the external files to be used. The FirePHPCore files are for FirePHP extension to troubleshoot and debug server-side issues. To use FirePHP debugger is very simple. First you need to import the FirePHPCore libraries and turn on output buffering in order to print from the server.
+
+```
+require_once($_SERVER['DOCUMENT_ROOT'] . '/FirePHPCore/FirePHP.class.php');
+require_once($_SERVER['DOCUMENT_ROOT'] . '/FirePHPCore/fb.php');
+ob_start();
+```
+Then you can print anything with the fb() function:
+
+```
+fb($myarray, 'Printing my array');
+```
+To view the FirePHP output enable the Firefox Firebug console.
+
+The connect_db.php file contains the static variables to connect to the database. This file has commented out the remote database server connection info since it is used in local environment. Be carefull to not update this file in the remote server.
+
+The Program class is the main class that will be instantiated for each program object. The first function will set all the public variables of the class: 
+
+```
+function Set_Program($program_id, $pre_test_id, $post_test_id, $forum_id, $evaluation_id, $certificate_id){}
+```
+
+`CheckProgramStatus()` - This function queries the *doctor_profiles* table to see if the user currently logged in has completed the program (in the database this is a boolen flag).
+
+`CheckProfileExists()` - This function checks if it is the first time the doctor visits the program and there has not been assigned a profile record yet.
+
+`CreateProfile()` - Creates a new profile with the programs status 0 (not completed). The field duplicate was used before because every French program was an exact replica of the English program. But after it was stated that they should be treated as different programs because they are accredited by different organizations.
+
+`UpdateProfile($date)` - Updates the doctor profile when the program has been completed (sets program_status = 1) with the current date
+
+`ReplicateProfile($date = NULL)` - This function is no longer supported in the code
+
+`GetSectionsStatus()` - Call the functions to set the sections' status in the array
+
+`CheckSectionsCompleted()` - Check if all 3 sections are completed (Pre-test, Post-test, Forum) and return true or false
+
+`CheckSectionsCompletedCustomized($sections)` - A custom version of the previous function. You can pass an array of required sections as an argument here. The array can contain any of the following static variables:
+
+```
+array("pretest", "postTest", "forum", "evaluation"); 
+```
+
+`GetPreTestStatus()` - This function searches a record that matches the user ID and the Test ID from table results, and sets the section status value. The table results has all the records of the Pre-test and Post-test that have been completed.
+
+`GetPostTestStatus()` - Same function as `GetPreTestStatus()` , the only difference is that it searches the Post Test data.
+
+`GetForumStatus()` - Counts the total number of posts that this user has answered for any of the topics that belong to the current Discussion forum. The criterium for the forum is that at least one post on any topic has to be submitted in order to grant a certificate. Thus, this function counts the posts for all the topics, and if none is found the section status of the forum is 0 (incomplete).
+
+`GetProgramEvaluationStatus()` - Queries the table evaluations to see if the user has submitted the program evaluation, and sets the section status to either 1 or 0. The evaluations table has the records of all the program evaluations of dxLink.
+
+`GetDateOfCompletion()` - This function is no longer used.
+
+### <a name="process_test"></a> process_test.php
+
+This file doesn't have a generic class, so all the functions are not contained inside a class. All the pre-test and post-test forms send the answers to this script which does all the heavy processing and registers them in the database. All the information is sent with a $_POST array through jQuery AJAX. The functions used in this script are:
+
+`GetData($data, &$program_section_id, &$no_qs)` - This function has 3 parameters:
+  - $data - contains the $_POST array with the number of test questions, Question and Answer nested array, a nested array of the choices selected and the program section ID.
+  	- Here is an example of what the $_POST array looks like:
+  	```php
+array(
+			['no_qs'] => 6,
+			['qas'] => array(
+							[0] => array(
+								['name'] => 'MRK_125_Q_1'
+								['value'] => 'High immunization rates.'
+								)
+							[1] => array(
+								['name'] => 'MRK_125_Q_2'
+								['value'] => '3 patients'
+								)
+							[2] => array(
+								['name'] => 'MRK_125_Q_3'
+								['value'] => 'A physician’s recommendation.'
+								)
+							[3] => array(
+								['name'] => 'MRK_125_Q_4'
+								['value'] => '“I’m not interested in vaccines.”'
+								)
+							[4] => array(
+								['name'] => 'MRK_125_Q_5'
+								['value'] => 'Ask open-ended questions.'
+								)
+							[5] => array(
+								['name'] => 'MRK_125_Q_6'
+								['value'] => 'Kindness.'
+								)
+						),
+			['choices'] => array(
+							['MRK_125_Q_1'] => 'c'
+							['MRK_125_Q_2'] => 'c'
+							['MRK_125_Q_3'] => 'a'
+							['MRK_125_Q_4'] => 'a'
+							['MRK_125_Q_5'] => 'c'
+							['MRK_125_Q_6'] => 'd'
+						),
+			['program_section'] => 'MRK_125_Pre_01'
+	)
+```
+  - $program_section_id - The pretest or posttest ID. You can see that there is an **&** at the beginning of each variable, this is called passing a variable by reference. This is very useful when you declare a variable and don't have a class. So to modify the variable in other functions you must pass it by reference. You can read more about it here : (http://php.net/manual/en/language.references.pass.php)
+  - $no_qs - number of questions from the test. This variable is also passed by reference and later changed.
+
+This function loops through the array of questions and answers, compares each answer with the valid answer (from DB table 'valid_answers') and inserts a new record for each of the answers for this test in the database.
+
+`Validate_data($questions_answers, $no_qs)` - Checks that the Q&A array is not empty, and compares the number of arrays submitted (each array for 1 Q&A block) and the number of questions the test has.
+
+`Sanitize($str,$remove_nl=true)` - Sanitizes the string to be manipulated.
+
+`Evaluate_Answer($con, $q_id, $answer)` - Compares the answer selected by the user and the valid answer and keeps a counter of the number of correct answers.
+
+`InsertAnswers($con, $doctor_id, $program_section_id, $q_id, $answer, $choice)` - Inserts each answer in the database in the doctor_answers table.
+
+`getAssessment($total, $correct_answers)` - Divides the number of correct answers by the total, and returns a percentage grade.
+
+`InsertResult($con, $doctor_id, $program_section_id, $assessment=0, $correct_answers=0)` - Insert a result for the completed program section in the results table.
+
+### <a name="process_evaluation"></a> process_evaluation.php
+
+### index.php
+
+The main script file that contronls the accredited program is the first index.php file that can be found within the parent folder of each program. 
+For instance for the vaccine program (MRK_125) the index.php file is the main program file. Initially the main files were named after the program names, like for HZ1Rev it was zoster.php, for hpv - hpv.php, etc. However to make it more consistent, index.php was chosen and will be used going forward. 
+
+The next set couple of lines of index.php is also very important to declare. The __membersite_config.php__ file is very important to import, since it has the database login information, access to fg_membersite with all the user account information, etc.
+The __program.php__ file is the main file that has the Program Class declaration. Here all the variables and functions are declared. This file retrieves from the database the program status, progress of each section, certificate of completion. As each section (pre-test, post-test, etc) of the program is submitted, and the main page (index.php) is refreshed, it updates the database and gets back from the database the new information.
+
+The following line instantiates the class Program :
+
+```
+$EnglishProgram = new Program();
+```
+
+The PERMANENT VARIABLES are declared first. These are the database ID's that correspond to the program and its different sections. For instance, for the HZ2Rev program the program_id column in the database is HZ_02_REV, the program_section_id column for pre-test is HZ_Pre_04, and so on. You have to use the same IDs in the code. The last variable is an array which holds each of the forum topic IDs; this topics array will be used in the forum.php file.
+
+After declaring the permanent variables, there are some flag variables :
+
+```
+$program_status = false;		 
+$program_completed = false;	  
+$sections_status = array();
+$no_sections_completed = 0;
+```
+
+
