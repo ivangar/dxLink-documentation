@@ -305,6 +305,20 @@ This function loops through the array of questions and answers, compares each an
 
 ### <a name="process_evaluation"></a> process_evaluation.php
 
+This self-contained file with functions is very similar to process_test.php file. It receives the same set of $_POST data from the jQuery AJAX, it validates that all the answers were submitted and it loops through each set of Q&A's before inserting the answers and the evaluation. At the beginning all the programs had the same evaluation form, it was standard. However, every project started to differ and to have its own custom evaluation form. This is the reason why every program has a custom process_evaluation.php file in the resources folder (ex: /programs/vaccine/resources/process_evaluation.php). Following is the short description of the process_evaluation file for the vaccine program, but bear in mind that each program has a slightly different version of this file.
+
+The vaccine program has one grid of multiple choice questions where the user rates from 1 to 5 scale, it has some check-box questions, and the open questions. Since the multiple choice and check-box questions are mandatory these will be validated by the script. The open-ended questions and the bias check-box are optional.
+
+`GetData($data, &$program_section_id)` - Same functionality as in the process_test.php file, however there is some extra validation for the checkboxes. The multiple check-box answers are concatenated and inserted as a long strin in the answers column. The Yes/No bias check-box value is inserted in the comments column. To make it somple any of the Yes/No questions that may appear in an evaluation form are threated the same way: if the user inserts anything in the text-area, regardles of whether he selected yes or no, it will be saved as the comments column in the answers table.
+
+`function EmtpyFields($choices, $no_qs)` - First checks if the `[choices]` array submitted is equal to the $no_qs (number of questions). In this case the number of questions corresponds only to the multiple choice questions (7 questions). Then it validates that each of the values in the array is not empty.
+
+`EmptyAnswer($questions_answers, &$checkboxes)` - Validates that at least one check-box has been selected for the second question only. The bias Yes/No question is optional so it is not validated.
+
+`insertCheckbox($con, $doctor_id, $program_section_id, $q_id, $answer, &$longAnswer, $choice, $checkboxes, &$checkboxArray)` - Concatenates each of the check-box values to the $longAnswer string and keeps a $checkboxArray counter for each one of the check-boxes already concatenated. When the counter reaches the number of check-boxes submitted, the it inserts the string as a complete answer.
+
+`UpdateAnswer($con, $doctor_id, $program_section_id, $q_id, $comment)` - If the user writes a comment to the bias (Yes/No) question, it is updated in this function. 
+
 ### index.php
 
 The main script file that contronls the accredited program is the first index.php file that can be found within the parent folder of each program. 
