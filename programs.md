@@ -170,7 +170,7 @@ For the purpose of this guide the Vaccination Communication (/programs/vaccine) 
 * `type_of_credit` - the type of credit that is granted for this accredited program
 
 
-## Program file structure
+## <a name="program_structure"></a>Program file structure
 
 Once the database has been populated with the program content, the second stage is to begin developing the source code. Since the programs are similar, the best way to get ahead faster is to duplicate an existing program folder with all its contents and start to modify it from there. However, before doing this you must be aware of the sections that are required for the new program; as stated before some programs vary in requisites to obtain the certificate. Some programs don't have Pre-test and Post-test, other programs have an extra section. Based on this analysis, duplicate the program that best corresponds to the criteria of the new program.
 
@@ -180,8 +180,8 @@ These main files are:
 * [program.php](#program)
 * [process_test.php](#process_test)
 * [process_evaluation.php](#process_evaluation)
-* forum_topics.php
-* program_results.php
+* [forum_topics.php](#topics)
+* [program_results.php](#program_results)
 
 Following is a brief description of each of these core-program files. They are the basis of all the accredited programs that are on dxlink so special care needs to be applied if there is a need to modify any of these files. But in general, they shouldn't be modified.
 
@@ -240,6 +240,7 @@ array("pretest", "postTest", "forum", "evaluation");
 `GetDateOfCompletion()` - This function is no longer used.
 
 ### <a name="process_test"></a> process_test.php
+[click here to go up](#program_structure)
 
 This file doesn't have a generic class, so all the functions are not contained inside a class. All the pre-test and post-test forms send the answers to this script which does all the heavy processing and registers them in the database. All the information is sent with a $_POST array through jQuery AJAX. The functions used in this script are:
 
@@ -304,44 +305,180 @@ This function loops through the array of questions and answers, compares each an
 `InsertResult($con, $doctor_id, $program_section_id, $assessment=0, $correct_answers=0)` - Insert a result for the completed program section in the results table.
 
 ### <a name="process_evaluation"></a> process_evaluation.php
+[click here to go up](#program_structure)
 
 This self-contained file with functions is very similar to process_test.php file. It receives the same set of $_POST data from the jQuery AJAX, it validates that all the answers were submitted and it loops through each set of Q&A's before inserting the answers and the evaluation. At the beginning all the programs had the same evaluation form, it was standard. However, every project started to differ and to have its own custom evaluation form. This is the reason why every program has a custom process_evaluation.php file in the resources folder (ex: /programs/vaccine/resources/process_evaluation.php). Following is the short description of the process_evaluation file for the vaccine program, but bear in mind that each program has a slightly different version of this file.
 
 The vaccine program has one grid of multiple choice questions where the user rates from 1 to 5 scale, it has some check-box questions, and the open questions. Since the multiple choice and check-box questions are mandatory these will be validated by the script. The open-ended questions and the bias check-box are optional.
 
-`GetData($data, &$program_section_id)` - Same functionality as in the process_test.php file, however there is some extra validation for the checkboxes. The multiple check-box answers are concatenated and inserted as a long strin in the answers column. The Yes/No bias check-box value is inserted in the comments column. To make it somple any of the Yes/No questions that may appear in an evaluation form are threated the same way: if the user inserts anything in the text-area, regardles of whether he selected yes or no, it will be saved as the comments column in the answers table.
+`GetData($data, &$program_section_id)` - Same functionality as in the process_test.php file, however there is some extra validation for the checkboxes. The multiple check-box answers from question 2 are concatenated and inserted as a long string in the `doctor_answer` column. The Yes/No bias check-box value is inserted in the comments column. To make it simple any of the Yes/No questions that may appear in an evaluation form are threated the same way: if the user inserts anything in the text-area, regardles of whether he selected yes or no, it will be saved as the comments column in the answers table.
 
-`function EmtpyFields($choices, $no_qs)` - First checks if the `[choices]` array submitted is equal to the $no_qs (number of questions). In this case the number of questions corresponds only to the multiple choice questions (7 questions). Then it validates that each of the values in the array is not empty.
+`EmtpyFields($choices, $no_qs)` - First checks if the `[choices]` array submitted is equal to the $no_qs (number of questions). In this case the number of questions corresponds only to the multiple choice questions (7 questions). Then it validates that each of the values in the array is not empty.
 
-`EmptyAnswer($questions_answers, &$checkboxes)` - Validates that at least one check-box has been selected for the second question only. The bias Yes/No question is optional so it is not validated.
+`EmptyAnswer($questions_answers, &$checkboxes)` - Validates that at least one check-box has been selected for the second question only. The bias Yes/No question is optional so it is not validated, as well as the open questions.
 
-`insertCheckbox($con, $doctor_id, $program_section_id, $q_id, $answer, &$longAnswer, $choice, $checkboxes, &$checkboxArray)` - Concatenates each of the check-box values to the $longAnswer string and keeps a $checkboxArray counter for each one of the check-boxes already concatenated. When the counter reaches the number of check-boxes submitted, the it inserts the string as a complete answer.
+`insertCheckbox($con, $doctor_id, $program_section_id, $q_id, $answer, &$longAnswer, $choice, $checkboxes, &$checkboxArray)` - Concatenates each of the check-box values to the $longAnswer string and keeps a $checkboxArray counter for each one of the check-boxes already concatenated. When the counter reaches the number of check-boxes submitted, then it inserts the string as a complete answer. The $_POST array below contains 3 check-box values, and each time the array is iterated the value is concatenated.
 
-`UpdateAnswer($con, $doctor_id, $program_section_id, $q_id, $comment)` - If the user writes a comment to the bias (Yes/No) question, it is updated in this function. 
-
-### index.php
-
-The main script file that contronls the accredited program is the first index.php file that can be found within the parent folder of each program. 
-For instance for the vaccine program (MRK_125) the index.php file is the main program file. Initially the main files were named after the program names, like for HZ1Rev it was zoster.php, for hpv - hpv.php, etc. However to make it more consistent, index.php was chosen and will be used going forward. 
-
-The next set couple of lines of index.php is also very important to declare. The __membersite_config.php__ file is very important to import, since it has the database login information, access to fg_membersite with all the user account information, etc.
-The __program.php__ file is the main file that has the Program Class declaration. Here all the variables and functions are declared. This file retrieves from the database the program status, progress of each section, certificate of completion. As each section (pre-test, post-test, etc) of the program is submitted, and the main page (index.php) is refreshed, it updates the database and gets back from the database the new information.
-
-The following line instantiates the class Program :
-
+```php
+array(
+      ['qas'] => array(
+              [3] => array(
+                ['name'] => 'AIT_E_14'
+                ['value'] => 'Communicator'
+                )
+              [4] => array(
+                ['name'] => 'AIT_E_14'
+                ['value'] => 'Manager'
+                )
+              [5] => array(
+                ['name'] => 'AIT_E_14'
+                ['value'] => 'Professional'
+                )
+  )
 ```
-$EnglishProgram = new Program();
+
+The answer inserted in the database will look like the following:
+
+```sql
+... 'AIT_E_14', 'Communicator, Manager, Professional', ...
 ```
 
-The PERMANENT VARIABLES are declared first. These are the database ID's that correspond to the program and its different sections. For instance, for the HZ2Rev program the program_id column in the database is HZ_02_REV, the program_section_id column for pre-test is HZ_Pre_04, and so on. You have to use the same IDs in the code. The last variable is an array which holds each of the forum topic IDs; this topics array will be used in the forum.php file.
+`UpdateAnswer($con, $doctor_id, $program_section_id, $q_id, $comment)` - If the user writes a comment to the bias (Yes/No) question, it is updated in this function. The array with the Question ID is processed and inserted first, so the record already exists and the next loop will update that question as a comment. For example, below the AIT_E_15 Q_ID is inserted first with the answer yes, and then the next loop it updates the previous record with the value as a comment.
 
-After declaring the permanent variables, there are some flag variables :
+```php
+array(
+      ['qas'] => array(
+              [8] => array(
+                ['name'] => 'AIT_E_15'
+                ['value'] => 'yes'
+                )
+              [9] => array(
+                ['name'] => 'bias'
+                ['value'] => 'This is a bias comment'
+                )
+  )
+```
+In the database it looks like :
 
+```sql
+... 'AIT_E_15', 'yes', 'This is a bias comment', ...
 ```
-$program_status = false;		 
-$program_completed = false;	  
-$sections_status = array();
-$no_sections_completed = 0;
+
+`InsertAnswers($con, $doctor_id, $program_section_id, $q_id, $answer, $choice)` - Same functionality as for the process_test script.
+
+`InsertEvaluation($con, $doctor_id, $program_section_id)` - Registers in the database in the evaluations table the evaluation completed by the user. 
+
+### <a name="topics"></a> forum_topics.php
+[click here to go up](#program_structure)
+
+The class ForumTopic has two main uses:
+* to insert the post linked to the forum topic 
+* this class is also used to load dynamically batches of topics already posted when the paginator is clicked. 
+
+The first option (insert a post) is pretty straightforward. At the bottom of the file (end of the class definition) you can observe that there is an if statement :
+
+```php
+if(isset($_POST['submit_comment']) && (!empty($_POST['submit_comment'])) ){
 ```
+
+Here is where the post array is submitted, the class object is instantiated and then a simple insert query function is called to insert the post linked to the corresponding topic ID.
+The $_POST array looks similar to this example:
+
+```php
+array(
+      [topic] => MRK_125_topic_01
+      [comment] => This is a comment to the topic
+      [submit_comment] => 1
+  )
+```
+
+The following functions are called to insert the post:
+
+`InsertPost($comment)` - It queries the table doctors to get the Province and Profession of the doctor who submitted the comment. Then it proceeds to insert the comment, and the topic ID to which this comment belongs.
+
+`send_email_alert($message, $topic_id)` - This function is a simple email alert to the moderator to keep track that the messages inserted respect the rules and that there isn't any offensive content.
+
+The second option of this class is to load the discussion forum comments, in batches of 10 rows for each of the topic.
+
+```php
+if (isset($_REQUEST['action'])) {
+```
+
+This statement is called by the file forum.php which sends the topic ID, the start row (0 by default) and the action string: 'get_rows' or 'row_count' and it switches each action to call a different set of functions:
+
+```php
+  switch ($action) {
+    case 'get_rows':        //This is sent with the $_REQUEST['action'] array to print the posts per topic
+      $forum->getRows();
+      break;
+    case 'row_count':   //Sent with $_REQUEST['action'] array to count the number of total posts per topic
+      $forum->getRowCount();
+      break;
+    default;
+      break;
+  }
+```
+
+`getRows()` - This function sets the start row from which the query will be sorted on. By default the start row is 0, and each time the paginator is clicked it will send the pagination number to the script via $_REQUEST['start']. This variable is then converted in multiples of 10 and passed on to the function that Selects the posts.
+
+`Get_Posts($start_row)` - It receives the start row as a parameter. It queries the table posts to select all the posts for the specific topic ID, orders the query by last posted message and limits the result starting with the offset (start row) and only brings 10 rows.
+
+`Generate_Posts($province, $profession, $message)` - Concatenates each result row into an HTML code with table cells each for the province, profession and message and assigns this result to $this->posts global variable.
+
+`Print_Posts()` - Creates the HTML table body, inserts all the posts and returns the result with an echo statement.
+
+And that is all the script does to fetch and print the posts. The other action that the switch statement runs through is for the case 'row_count'. This value is sent in order to get the number of posts per topic and set a hidden field for the paginator, which is used by the JavaScript code to set the number of pagination numbers.
+
+`getRowCount()` - Get number of total comments that a topic has in the database.
+
+### <a name="program_results"></a> program_results.php
+[click here to go up](#program_structure)
+
+Once the Pre-test and Post-test have been answered, this script gets from the database the number of correct answers, the assessment and the answer choices for each test. It does this for Pre-test and Post-test for the program that is being loaded. This file is not called directly by the the AJAX request as it was the case in the previous files. The AJAX calls the results.php file which imports the program_results.php file and cretas the **TestEvaluation** object, and then it uses all its functions and public variables.
+
+`Set_Program($data)` - This function sets the data received from the AJAX request, sets the User ID and connects to the database. Here is an example of the AJAX $_POST request received :
+
+```php
+array(
+      ['no_questions'] => 11,
+      ['question_ids'] => array(
+                          [0] => 'HPV_Q_1'
+                          [1] => 'HPV_Q_2'
+                          [2] => 'HPV_Q_3'
+                          [3] => 'HPV_Q_4'
+                          [4] => 'HPV_Q_5'
+                          [5] => 'HPV_Q_6'
+                          [6] => 'HPV_Q_7'
+                          [7] => 'HPV_Q_8'
+                          [8] => 'HPV_Q_9'
+                          [9] => 'HPV_Q_10'
+                          [10] => 'HPV_Q_11'
+                      ),
+      ['sections'] => array(
+                      ['preTest'] => 'HPV_Pre_01'
+                      ['postTest'] => 'HPV_Post_01'
+                    )
+  )
+```
+
+`Set_Tests($data)` - Sets the class variables with the $_POST data received
+
+`Get_Final_Evaluation()` - Has a loop that iterates through each of the sections (Pre-test and Post-test) and calls a function to get the test results.
+
+`Set_Section_Results($section_id)` - receives as a parameter the test ID and queries the database to get the assessment and the number of correct answers. It then creates an array with each section and sets each of the values in the array to with the corresponing assessment and correct answer number.
+
+`Get_Assessment()` - Creates an HTML string with the results statement, which prints the number of correct answers and the assessment of the Pre-test and Post-test.
+
+`Get_Pretest_Answers()` - Loops through each of the question ID's from the array and gets the choice letter which corresponds to the answer. It pushes each answer onto the end of an array.
+
+`Get_Postest_Answers()` - Does the same operation as **Get_Pretest_Answers()**, but it inserts the answers in the **postest_answers** array
+
+Now that the database structure has been reviewed and the general overview of each of the main files has been explained the following pages wil describe in more detail the accredited program setup.
+
+Click on the following links to see the other sections [ [2](program_setup.md) ]
+
+
+
+
 
 
