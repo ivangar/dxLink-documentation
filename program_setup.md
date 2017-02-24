@@ -1,5 +1,7 @@
 # dxLink - Accredited Programs Setup content
 
+Click on the following links to see the other sections [ [1](programs.md) ]
+
 ### index.php
 
 The main script file that controls the accredited program is the first index.php file that can be found within the parent folder of each program. 
@@ -29,6 +31,7 @@ $program_completed = false;
 $sections_status = array();
 $no_sections_completed = 0;
 ```
+<<<<<<< Updated upstream
 $program_status variable will check if the program is already completed. If it is not, then the script checks section by section to see if all of them are submitted and then updates the status.
 
 $program_completed is a flag variable that will be used to display the hidden link to get the certificate in the accreditation.html file
@@ -80,3 +83,6 @@ Following is a short description of the external CSS and JavaScript files that a
 - `tabScript.js`
 - `program.js`
 - `blockUI.js`
+=======
+
+>>>>>>> Stashed changes

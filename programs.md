@@ -1,5 +1,7 @@
 # dxLink - Accredited Programs
 
+Click on the following links to see the other sections [ [2](program_setup.md) ]
+
 ## Database ER-diagram structure
 
 The first stage of creating a new accredited program and its sections is to generate new records in the database. For best practices, I ususally insert the data in the local database first using Sequel Pro, and then do the same thing in the remote database through phpMyAdmin. The ID's for unique key fields of each table below are chosen to match the program ID of the program itself. So for example if the `program_id` is 'SUN_01', then the `program_section_id` key value for pretest should be 'SUN_01_Pre_01', the `topic_id` key value should be 'SUN_01_topic_01', and so on. I add the _01 at the end of each of ther sections ID because we might have a second version of the same program like we did for Zoster programs for instance, or we may have a similar version of the same program. So numbering them makes it a more efficient way to create IDs.
