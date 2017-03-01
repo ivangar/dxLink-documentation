@@ -31,7 +31,7 @@ $program_completed = false;
 $sections_status = array();
 $no_sections_completed = 0;
 ```
-<<<<<<< Updated upstream
+
 $program_status variable will check if the program is already completed. If it is not, then the script checks section by section to see if all of them are submitted and then updates the status.
 
 $program_completed is a flag variable that will be used to display the hidden link to get the certificate in the accreditation.html file
@@ -78,11 +78,29 @@ Following is a short description of the external CSS and JavaScript files that a
 - `main.css` - has some local rules for the general paginator (dispays the page number)
 - `program_styles.css` - has the majority of the program styles such as the slide images, discussion forum pagination and tables, evaluation form, accreditation page and home page. 
 - `parsley.js` - this is an asynchonous JS library to validate empty entries of the forms. Here is the documentation for this library http://parsleyjs.github.io/Parsley-1.x/documentation.html
-- `bowser.min.js`
-- `hashchange.js`
-- `tabScript.js`
-- `program.js`
-- `blockUI.js`
-=======
+The version that all the programs use is the old version 1.x so this guide is still good as a reference.
+- `bowser.min.js` - browser detector, used to assign height and width of the slide pop-up window.
+- `hashchange.js` - jQuery plugin that uses the browser #hash history that is triggered on window.onhashchange event. Every time a vertical menu item is is clicked, you can use the browser buttons back and forth to jump between the tabs. More documentation can be found here http://benalman.com/projects/jquery-hashchange-plugin/
+- `tabScript.js` - this is the general script that shows the content of the current vertical menu item (tab) and hides the content of all the other tabs
+- `program.js` - This script is unique for each program, so it has to be edited for every new program. It contains the page counter functions, resets the first page of the tab, the discussion forum character counter and the $.blockUI modal boxes code.
+- `blockUI.js` - plugin that displays the modal box. Documentation and examples can be found here http://malsup.com/jquery/block/
 
->>>>>>> Stashed changes
+After the navigation bar there are 2 table rows: the first contains the page counter and the second has the vertical menu div content.
+
+The page counter is a div with span elements. All of them are hidden except the last span which displays the page number. The page functionality will be explained in mored detail in the program.js file documentation.
+
+The vertical menu contains the ul > li elements with the tab attribute for each element and the title attribute. The tab attribute is used in the JavaScript code to know which tab to make visible and hide the other tabs, and the title attribute is used by JavaScript to reset each menu item to the first slide on hovering each menu item, it is like a reset functionality.
+
+After the ul there are a sequence of div tags that load each of the pages. Each div that corresponds to a slide section has an id. This id is used to load with an AJAX call every slide when the next/previous buttons are cliked.
+
+For example, the following ul > li has the title about. The title has to match the subfolder where you save all the pages that correspond to the slides.
+As well the div that links to the tab 3 has an the id like the title but with the _section added to it. This is used by JavaScript as well.
+```
+<li tab="tab3" title="about">About the program</li>
+```
+```
+<div class="tab-content" id="about_section">
+    <?php require_once('about/about_slide_1.html'); ?>
+</div>    
+```
+So every time you ad a new set of slides for a section, you use the folder name as the parameter in the IDs and title attributes.
