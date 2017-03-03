@@ -2,6 +2,9 @@
 
 Click on the following links to see the other sections [ [1](programs.md) ]
 
+---------------------------------------
+## Basic program setup
+
 ### index.php
 
 The main script file that controls the accredited program is the first index.php file that can be found within the parent folder of each program. 
@@ -57,14 +60,14 @@ if( !isset($_SESSION['arrow_box'])){ $_SESSION['arrow_box'] = true; }
 
 It only sets the session variable once, so the message pops up only one time when the user logs in.
 
-The rest of the PHP code is already commented. Basically the first time the user access the program it will insert a new record on his profile with a 0 as a program status. Then each time the user submits a form or posts on the Discussion Forum, the page is reloaded and the code checks each of the sections, setting the flag variables mentioned above. Once the user has completed all the sections, the doctor profile gets updated and the certificate link will now be visible for the user.
+The rest of the PHP code is already commented. Basically the first time the user access the program it will insert a new record on his profile with a 0 as a program status. Then each time the user submits a form or posts on the Discussion Forum, the page is reloaded and the code checks each of the sections, setting the flag variables mentioned above. Once the user has completed all the sections required to complete the program, the doctor profile gets updated and the certificate link will now be visible for the user.
 
 Following along the lines, you can find 3 JavaScript variables: 
 * var showTip - boolean variable used to display the black $.blockUI box with the hint
 * var section_submitted - boolean variable used to display the black $.blockUI with the progress status
 * var no_sections_completed - counter of the number of sections completed so far
 
-The reason why these variables are declared here and not in the program.js file is because the server executes all the PHP code before sending the response header to the browser, so the PHP variables are not accessible from the external files.
+The reason why these variables are declared here and not in the program.js file is because the server executes all the PHP code before sending the response header to the browser, so none of the PHP code is accessible from the external files.
 
 Following is a short description of the external CSS and JavaScript files that are imported in the file :
 
@@ -76,7 +79,7 @@ Following is a short description of the external CSS and JavaScript files that a
 - `form.css` - file that has all the basic styles of the Pre-test, Post-test and Program Evaluation forms
 - `nova.css` - contains all the styles for the form elements like unordered lists, labels and radio buttons
 - `main.css` - has some local rules for the general paginator (dispays the page number)
-- `program_styles.css` - has the majority of the program styles such as the slide images, discussion forum pagination and tables, evaluation form, accreditation page and home page. 
+- `program_styles.css` - has the majority of the program styles such as the slide images, discussion forum pagination and tables, evaluation form, accreditation page and home page. Most of the accredited program styles come from this file.
 - `parsley.js` - this is an asynchonous JS library to validate empty entries of the forms. Here is the documentation for this library http://parsleyjs.github.io/Parsley-1.x/documentation.html
 The version that all the programs use is the old version 1.x so this guide is still good as a reference.
 - `bowser.min.js` - browser detector, used to assign height and width of the slide pop-up window.
@@ -87,14 +90,14 @@ The version that all the programs use is the old version 1.x so this guide is st
 
 After the navigation bar there are 2 table rows: the first contains the page counter and the second has the vertical menu div content.
 
-The page counter is a div with span elements. All of them are hidden except the last span which displays the page number. The page functionality will be explained in mored detail in the program.js file documentation.
+The page counter is a div with span elements. All of them are hidden except the last span which displays the page number. The page counter functionality will be explained in mored detail in the program.js file documentation.
 
-The vertical menu contains the ul > li elements with the tab attribute for each element and the title attribute. The tab attribute is used in the JavaScript code to know which tab to make visible and hide the other tabs, and the title attribute is used by JavaScript to reset each menu item to the first slide on hovering each menu item, it is like a reset functionality.
+The second part - vertical menu - contains the ul > li elements with the tab attribute for each element and the title attribute. The tab attribute is used in the JavaScript code to know which tab to make visible and hide the other tabs, and the title attribute is used by JavaScript to reset each menu item to the first slide. On hovering with the mouse on each menu item, this function can be compared as a "reset to first slide of this section". This way, every time the user clicks on any of the tabs, it always brings the first slide of the section. This behaviour was integrated because it was specifically asked for. 
 
-After the ul there are a sequence of div tags that load each of the pages. Each div that corresponds to a slide section has an id. This id is used to load with an AJAX call every slide when the next/previous buttons are cliked.
+After the ul there are a sequence of `<div>` tags that load each of the files. Only the `<div>` that corresponds to a slide section has an id. This id is used to load with an AJAX call every slide when the next/previous buttons are cliked. It will be more clear once you see how the slides are loaded with JavaScript.
 
-For example, the following ul > li has the title about. The title has to match the subfolder where you save all the pages that correspond to the slides.
-As well the div that links to the tab 3 has an the id like the title but with the _section added to it. This is used by JavaScript as well.
+For example, the following `<li>` has the title `about`. The title has to match the name of the subfolder where you save all the files that correspond to the slides.
+As well the `<div>` that links to the 3rd tab has the id that starts with the folder name but with the `_section` added to it. This is used by JavaScript as well. And to name the file that contains each of the slide's content, you name it as well with the subfolder prefix_slide_number.html
 ```
 <li tab="tab3" title="about">About the program</li>
 ```
@@ -103,4 +106,57 @@ As well the div that links to the tab 3 has an the id like the title but with th
     <?php require_once('about/about_slide_1.html'); ?>
 </div>    
 ```
-So every time you ad a new set of slides for a section, you use the folder name as the parameter in the IDs and title attributes.
+So every time you ad a new set of slides for a section, you use the folder name as the prefix in the IDs, title attributes, and file names.
+
+---------------------------------------
+
+The next step in the development of an accredited program is basically divided in 2 stages: the slides and the program sections (Pre-test, Discussion Forum, etc). The order in which you develop either of them doesn't matter. You can start with the slides first and then finish with the program sections or vice versa. For convinience, the hardest part (program sections) is introduced first.
+
+Before jumping into the program sections setup, I will give a detailed explanation of the file program.js and the role it plays in each of the program sections.
+
+### <a name="program_js"></a> program.js
+
+This external file is included in the index.php file at the top
+
+```
+<script type="text/javascript" src="js/program.js"></script>
+```
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

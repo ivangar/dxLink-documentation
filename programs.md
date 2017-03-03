@@ -121,6 +121,8 @@ For the purpose of this guide the Vaccination Communication (/programs/vaccine) 
   'Mainpro+'
 ~~~~
 
+---------------------------------------
+
 ## Database tables overview
 
 #### programs columns ####
@@ -171,6 +173,7 @@ For the purpose of this guide the Vaccination Communication (/programs/vaccine) 
 * `no_credits` - number of credits earned for the accredited program
 * `type_of_credit` - the type of credit that is granted for this accredited program
 
+---------------------------------------
 
 ## <a name="program_structure"></a>Program file structure
 
